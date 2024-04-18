@@ -1,4 +1,4 @@
-**Python LoginA Application**
+**Python Login Application**
 
 This Python program provides basic user authentication functionalities including sign up and login. It utilizes SQLite for database storage and bcrypt for password hashing.
 
