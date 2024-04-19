@@ -13,12 +13,12 @@ def close_database_connection(conn):
 
 # Functions for user interface
 def display_welcome_message():
-    print("Welcome to the User Authentication System!")
-    print("==========================================")
+    print("\nWelcome to the User Authentication System!")
+    print("\n==========================================")
 
 def display_menu():
     print("\nMenu:")
-    print("1. Log in")
+    print("\n1. Log in")
     print("2. Sign up")
     print("3. Exit")
 
@@ -31,53 +31,61 @@ def display_signup_prompt():
     print("-------")
 
 def get_username_password():
-    username = input("Please enter your username: ")
-    password = getpass.getpass("Please enter your password: ")
-    return username, password
+    while True:
+        username = input("Please enter your username: ").strip()
+        password = getpass.getpass("Please enter your password: ").strip()
+        
+        if username and password:  # Check if both username and password are non-empty
+            return username, password
+        else:
+            print("\nUsername and password cannot be empty. Please try again.")
 
 def display_error_message(message):
-    print("Error:", message)
+    print("\nError:", message)
 
-def login_successful():
-    print("Login successful.")
+def login_successful(username):
+
+    print(f"\nLogin to User: {username} sucessful.")
 
 def signup_successful():
-    print("User signed up successfully.")
+    print("\nUser signed up successfully.")
 
 def user_already_exists():
-    print("Username already exists. Please choose a different one.")
+    print("\nUsername already exists. Please choose a different one.")
 
 def incorrect_password():
-    print("Incorrect password.")
+    print("\nIncorrect password.")
 
 def user_not_found():
-    print("User not found.")
+    print("\nUser not found.")
 
 # Functions for program logic
-def startProgram():
+
+display_welcome_message()
+    
+def start_program():
     while True:
         try:
-            display_welcome_message()
             conn, cur = connect_to_database()
             cur.execute("""CREATE TABLE IF NOT EXISTS logins (username TEXT, password TEXT)""")
             close_database_connection(conn)
-        except sqlite3.Error as errormessage:
-            display_error_message("Error reading data from SQLite database: " + str(errormessage))
+        except sqlite3.Error as error_message:
+            display_error_message("\nError reading data from SQLite database: " + str(error_message))
 
         display_menu()
-        option = input("Please select an option: ")
+        option = input("\nPlease select an option: ")
 
         if option == "1":
             login()
         elif option == "2":
-            signup()
+            sign_up()
         elif option == "3":
-            print("Goodbye!")
+            print("\nGoodbye!")
             break
         else:
-            print("Please enter a valid option.")
+            print("\nPlease enter a valid option.")
 
-def signup():
+def sign_up():
     try:
         display_signup_prompt()
         conn, cur = connect_to_database()
@@ -99,8 +107,8 @@ def signup():
                 break
 
         close_database_connection(conn)
-    except sqlite3.Error as errormessage:
-        display_error_message("Error signing up: " + str(errormessage))
+    except sqlite3.Error as error_message:
+        display_error_message("\nError signing up: " + str(error_message))
 
 def login():
     try:
@@ -110,7 +118,7 @@ def login():
         cur.execute("SELECT COUNT(*) FROM logins")
         count = cur.fetchone()[0]
         if count == 0:
-            print("No users found in the database. Please sign up first.")
+            print("\nNo users found in the database. Please sign up first.")
             return
 
         while True:
@@ -122,7 +130,7 @@ def login():
                 hashed_password_from_db = row[0]
                 hashed_password_input = bcrypt.hashpw(password.encode(), hashed_password_from_db)
                 if hashed_password_input == hashed_password_from_db:
-                    login_successful()
+                    login_successful(username)
                     break
                 else:
                     incorrect_password()
@@ -130,8 +138,8 @@ def login():
                 user_not_found()
 
         close_database_connection(conn)
-    except sqlite3.Error as errormessage:
-        display_error_message("Error logging in: " + str(errormessage))
+    except sqlite3.Error as error_message:
+        display_error_message("\nError logging in: " + str(error_message))
 
 # Start the program
-startProgram()
+start_program()
