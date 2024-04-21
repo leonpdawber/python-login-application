@@ -10,6 +10,10 @@ def connect_to_database():
 
 def close_database_connection(conn):
     conn.close()
+    
+# For Database viewing I use "DB Browser for SQLite":
+# Free tool which can be downloaded at https://sqlitebrowser.org.
+# I do not modify the db with this tool - that should all be done with the program logic!    
 
 # Functions for user interface
 def display_welcome_message():
@@ -83,7 +87,7 @@ def start_program():
             print("\nGoodbye!\n")
             break
         else:
-            print("\nPlease enter a valid option.\n")
+            print("\nPlease enter a valid option.")
 
 def sign_up():
     try:
