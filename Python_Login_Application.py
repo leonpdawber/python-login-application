@@ -18,21 +18,22 @@ def display_welcome_message():
 
 def display_menu():
     print("\nMenu:")
+    print("-----")
     print("\n1. Log in")
     print("2. Sign up")
     print("3. Exit")
 
 def display_login_prompt():
-    print("\nLog In")
+    print("\nLog In:")
     print("------")
 
 def display_signup_prompt():
-    print("\nSign Up")
+    print("\nSign Up:")
     print("-------")
 
 def get_username_password():
     while True:
-        username = input("Please enter your username: ").strip()
+        username = input("\nPlease enter your username: ").strip()
         password = getpass.getpass("Please enter your password: ").strip()
         
         if username and password:  # Check if both username and password are non-empty
@@ -44,11 +45,10 @@ def display_error_message(message):
     print("\nError:", message)
 
 def login_successful(username):
+    print(f"\nLogin to User: {username} successful.")
 
-    print(f"\nLogin to User: {username} sucessful.")
-
-def signup_successful():
-    print("\nUser signed up successfully.")
+def signup_successful(username):
+    print(f"\nUser: {username} signed up successfully.")
 
 def user_already_exists():
     print("\nUsername already exists. Please choose a different one.")
@@ -73,7 +73,7 @@ def start_program():
             display_error_message("\nError reading data from SQLite database: " + str(error_message))
 
         display_menu()
-        option = input("\nPlease select an option: ")
+        option = input("\nPlease select an option: ").strip()
 
         if option == "1":
             login()
@@ -90,21 +90,26 @@ def sign_up():
         display_signup_prompt()
         conn, cur = connect_to_database()
 
-        username, password = get_username_password()
+        username = input("\nPlease enter your desired username: ").strip()
 
-        while True:
-            hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-            cur.execute("SELECT * FROM logins WHERE username=?", (username,))
-            existing_user = cur.fetchone()
-            if existing_user:
-                user_already_exists()
-                username, password = get_username_password()
-            else:
-                credentials = (username, hashed_password)
-                cur.execute("""INSERT INTO logins (username, password) VALUES (?, ?)""", credentials)
-                conn.commit()
-                signup_successful()
-                break
+        # Check if the username already exists in the database
+        cur.execute("SELECT * FROM logins WHERE username=?", (username,))
+        existing_user = cur.fetchone()
+        if existing_user:
+            user_already_exists()
+            close_database_connection(conn)
+            return  # Exit the function if the user already exists
+
+        # If the username does not exist, proceed with signing up
+        password = getpass.getpass("Please enter your password: ").strip()
+        
+        # Increase the number of hashing rounds for better security
+        hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=14))
+        
+        credentials = (username, hashed_password)
+        cur.execute("""INSERT INTO logins (username, password) VALUES (?, ?)""", credentials)
+        conn.commit()
+        signup_successful(username)
 
         close_database_connection(conn)
     except sqlite3.Error as error_message:
@@ -128,15 +133,13 @@ def login():
             row = cur.fetchone()
             if row:
                 hashed_password_from_db = row[0]
-                hashed_password_input = bcrypt.hashpw(password.encode(), hashed_password_from_db)
-                if hashed_password_input == hashed_password_from_db:
+                if bcrypt.checkpw(password.encode(), hashed_password_from_db):
                     login_successful(username)
                     break
                 else:
                     incorrect_password()
             else:
                 user_not_found()
-
         close_database_connection(conn)
     except sqlite3.Error as error_message:
         display_error_message("\nError logging in: " + str(error_message))
