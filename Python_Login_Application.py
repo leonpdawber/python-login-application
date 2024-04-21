@@ -80,10 +80,10 @@ def start_program():
         elif option == "2":
             sign_up()
         elif option == "3":
-            print("\nGoodbye!")
+            print("\nGoodbye!\n")
             break
         else:
-            print("\nPlease enter a valid option.")
+            print("\nPlease enter a valid option.\n")
 
 def sign_up():
     try:
